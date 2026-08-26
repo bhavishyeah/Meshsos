@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { API_BASE_URL } from '../config/env';
 import { setTokenGetter, setTokenSetter } from '../services/api';
+import { setUserIdGetter } from '../services/sync-engine.service';
 
 // --- Types ---
 
@@ -61,12 +62,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const tokenRef = useRef<string | null>(null);
   tokenRef.current = state.accessToken;
 
-  // Wire up api.ts token getter/setter on mount
+  // Use a ref for user ID so the SyncEngine getter always reads latest value
+  const userIdRef = useRef<string | null>(null);
+  userIdRef.current = state.user?.id ?? null;
+
+  // Wire up api.ts token getter/setter and sync-engine userId getter on mount
   useEffect(() => {
     setTokenGetter(() => tokenRef.current);
     setTokenSetter((token: string) => {
       setState((prev) => ({ ...prev, accessToken: token }));
     });
+    setUserIdGetter(() => userIdRef.current);
   }, []);
 
   /**

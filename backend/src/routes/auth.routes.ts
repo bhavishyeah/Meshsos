@@ -1,6 +1,7 @@
 /**
  * Authentication Routes for MeshSOS.
  *
+ * POST /api/auth/register    - Public survivor self-registration
  * POST /api/auth/login       - Authenticate and get tokens
  * POST /api/auth/logout      - Revoke current session
  * POST /api/auth/refresh     - Refresh access token using refresh cookie
@@ -9,6 +10,7 @@
  */
 
 import { Router, type Request, type Response } from 'express';
+import { z } from 'zod';
 import {
   login,
   logout,
@@ -17,6 +19,7 @@ import {
   revokeSession,
   AuthError,
 } from '../services/auth.service.js';
+import { registerSurvivor, UserServiceError } from '../services/user.service.js';
 import { authenticate } from '../middleware/auth.middleware.js';
 import { isPrivilegedRole, requiresMFA, needsMFASetup } from '../services/mfa.service.js';
 
@@ -44,6 +47,60 @@ function clearRefreshCookie(res: Response): void {
     path: '/api/auth',
   });
 }
+
+// Zod schema for registration input validation
+const registerSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  email: z.string().email('A valid email address is required'),
+  password: z.string().min(8, 'Password must be at least 8 characters long'),
+});
+
+/**
+ * POST /api/auth/register
+ * Body: { name, email, password }
+ * Returns: { accessToken, user: { id, role, name, email } }
+ * Sets: HTTP-only refresh cookie
+ * Public endpoint — no authentication required.
+ */
+router.post('/register', async (req: Request, res: Response) => {
+  try {
+    const parsed = registerSchema.safeParse(req.body);
+
+    if (!parsed.success) {
+      const firstIssue = parsed.error.issues[0];
+      res.status(400).json({ error: firstIssue.message });
+      return;
+    }
+
+    const { name, email, password } = parsed.data;
+
+    // Create the survivor account
+    await registerSurvivor(name, email, password);
+
+    // Log in immediately to create a session and issue tokens
+    const loginResult = await login(email, password);
+
+    // Set refresh token cookie
+    setRefreshCookie(res, loginResult.refreshToken);
+
+    // Return access token and user info
+    res.status(200).json({
+      accessToken: loginResult.accessToken,
+      user: loginResult.user,
+    });
+  } catch (err) {
+    if (err instanceof UserServiceError) {
+      res.status(err.statusCode).json({ error: err.message });
+      return;
+    }
+    if (err instanceof AuthError) {
+      res.status(err.statusCode).json({ error: err.message });
+      return;
+    }
+    console.error('Registration error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 /**
  * POST /api/auth/login

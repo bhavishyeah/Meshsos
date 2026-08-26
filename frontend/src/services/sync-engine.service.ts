@@ -5,6 +5,23 @@ import { getOrCreateSessionId } from '../db/index';
 import { triggerPushRegistration } from './push-registration-trigger';
 
 /**
+ * Module-level userId accessor.
+ *
+ * AuthContext calls `setUserIdGetter` on mount to wire its state into this module.
+ * When authenticated, returns the current user's ID so the SyncEngine can
+ * associate SOS records with the survivor's account (Requirement 6.1).
+ */
+let userIdGetter: () => string | null = () => null;
+
+/**
+ * Register the getter used by SyncEngine to read the current user ID.
+ * Called once by AuthContext on initialization.
+ */
+export function setUserIdGetter(getter: () => string | null): void {
+  userIdGetter = getter;
+}
+
+/**
  * Configuration for the SyncEngine.
  */
 export interface SyncEngineConfig {
@@ -160,6 +177,7 @@ export class SyncEngineImpl implements SyncEngine {
           situationType: record.situationType,
           description: record.description,
           sessionId,
+          ...(userIdGetter() ? { userId: userIdGetter() } : {}),
         }),
       });
 
