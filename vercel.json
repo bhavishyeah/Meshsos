@@ -7,7 +7,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://RAILWAY_BACKEND_URL/api/:path*"
+      "destination": "https://meshsos-production.up.railway.app/api/:path*"
     }
   ]
 }
