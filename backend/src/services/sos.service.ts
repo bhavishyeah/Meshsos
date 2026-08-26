@@ -164,7 +164,7 @@ export async function getSOSById(sosId: string): Promise<SOSIncidentRow | null> 
       accuracy, location_method, location_timestamp,
       people_count, situation_type, description,
       priority_score, priority_band, status,
-      region_id, assigned_responder_id, disaster_event_id,
+      region_id, assigned_responder_id, assigned_station_id, disaster_event_id,
       duplicate_flag, duplicate_of, created_at, updated_at
     FROM sos_incidents
     WHERE id = $1`,
@@ -279,7 +279,7 @@ export async function getSOSHistory(userId: string): Promise<SOSIncidentRow[]> {
       accuracy, location_method, location_timestamp,
       people_count, situation_type, description,
       priority_score, priority_band, status,
-      region_id, assigned_responder_id, disaster_event_id,
+      region_id, assigned_responder_id, assigned_station_id, disaster_event_id,
       duplicate_flag, duplicate_of, created_at, updated_at
     FROM sos_incidents
     WHERE user_id = $1

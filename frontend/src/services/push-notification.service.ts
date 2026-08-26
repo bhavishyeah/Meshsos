@@ -107,12 +107,11 @@ export async function subscribe(vapidPublicKey: string): Promise<PushSubscriptio
  */
 export async function registerWithBackend(subscription: PushSubscription): Promise<boolean> {
   try {
-    const response = await fetch('/api/push/subscribe', {
+    const { authFetch } = await import('./api');
+    const { API_BASE_URL } = await import('../config/env');
+
+    const response = await authFetch(`${API_BASE_URL}/api/push/subscribe`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
       body: JSON.stringify(subscription.toJSON()),
     });
 

@@ -13,13 +13,18 @@ import { responderRouter } from './routes/responder.routes.js';
 import { metricsRouter } from './routes/metrics.routes.js';
 import { regionRouter } from './routes/region.routes.js';
 import { userRouter } from './routes/user.routes.js';
+import { pushRouter } from './routes/push.routes.js';
 import { initializeWebSocket } from './websocket/index.js';
+import { configureWebPush } from './services/push.service.js';
 import { apiRateLimiter, sosRateLimiter } from './middleware/rate-limit.middleware.js';
 import { MAX_PAYLOAD_SIZE, payloadTooLargeHandler } from './middleware/validation.middleware.js';
 
 const app = express();
 const httpServer = createServer(app);
 const PORT = process.env.PORT ?? 3001;
+
+// ─── Configure Web Push ─────────────────────────────────────────────────────
+configureWebPush();
 
 // ─── Security Headers ───────────────────────────────────────────────────────
 // Helmet with strict CSP for PWA compatibility (Req 38.4, 38.5)
@@ -98,6 +103,9 @@ app.use('/api/regions', regionRouter);
 
 // User management routes (admin-only)
 app.use('/api/users', userRouter);
+
+// Push notification subscription routes
+app.use('/api/push', pushRouter);
 
 // ─── Error Handlers ─────────────────────────────────────────────────────────
 // Handle payload-too-large errors with consistent JSON response

@@ -134,3 +134,38 @@ self.addEventListener('message', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(self.clients.claim());
 });
+
+
+// ─── Push Notification Handling ──────────────────────────────────────────────
+// Display notifications from the backend push service and handle click navigation.
+
+self.addEventListener('push', (event) => {
+  const data = event.data?.json() ?? { title: 'MeshSOS', body: 'You have a new update' };
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: '/pwa-192x192.png',
+      badge: '/pwa-192x192.png',
+      tag: data.data?.sosId ?? 'meshsos-update',
+      data: data.data ?? {},
+      requireInteraction: true,
+    })
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const notifData = event.notification.data as { sosId?: string } | undefined;
+  const url = notifData?.sosId ? `/#/queue/${notifData.sosId}` : '/#/queue';
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if ('focus' in client) {
+          client.focus();
+          return (client as WindowClient).navigate(url);
+        }
+      }
+      return self.clients.openWindow(url);
+    })
+  );
+});

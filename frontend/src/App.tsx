@@ -113,7 +113,7 @@ export function App() {
   // --- Profile (requires any authenticated user) ---
   if (route === '/profile') {
     return (
-      <ProtectedRoute allowedRoles={['administrator', 'dispatcher', 'supervisor', 'responder', 'auditor']}>
+      <ProtectedRoute allowedRoles={['administrator', 'dispatcher', 'supervisor', 'responder', 'auditor', 'survivor']}>
         <div className="flex flex-col h-screen">
           <ProfileScreen />
           <BottomNav currentRoute={route} />

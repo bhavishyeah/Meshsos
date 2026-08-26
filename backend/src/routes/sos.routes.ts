@@ -28,7 +28,7 @@ import {
 import { markEnRoute, markArrived, markResolved } from '../services/workflow.service.js';
 import { checkSuspiciousActivity, flagSuspiciousActivity } from '../services/suspicious-activity.service.js';
 import { checkDuplicate, flagDuplicate } from '../services/deduplication.service.js';
-import { broadcastDispatchAssignment, broadcastStateChange, broadcastStationAlert } from '../websocket/index.js';
+import { broadcastDispatchAssignment, broadcastSOSCreated, broadcastStateChange, broadcastStationAlert } from '../websocket/index.js';
 import { startEscalation } from '../services/escalation.service.js';
 import { isValidTransition } from '@meshsos/shared';
 import type { SOSStatus } from '@meshsos/shared';
@@ -169,6 +169,18 @@ router.post('/', optionalAuthenticate, async (req: Request, res: Response) => {
       // Log but do not fail the response — SOS was already created successfully
       console.error('Auto-dispatch error (non-blocking):', autoDispatchErr);
     }
+
+    // Broadcast sos:created to Command Center and region room
+    broadcastSOSCreated(incident.region_id, {
+      id: incident.id,
+      emergencyType: incident.emergency_type,
+      latitude: incident.latitude != null ? Number(incident.latitude) : null,
+      longitude: incident.longitude != null ? Number(incident.longitude) : null,
+      accuracy: incident.accuracy != null ? Number(incident.accuracy) : null,
+      priorityBand: (incident.priority_band as 'critical' | 'high' | 'medium' | 'low') ?? 'low',
+      regionId: incident.region_id,
+      createdAt: new Date(incident.created_at),
+    });
 
     res.status(201).json(incident);
   } catch (err) {
