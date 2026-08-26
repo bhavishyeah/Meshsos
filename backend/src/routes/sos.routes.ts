@@ -726,9 +726,11 @@ router.post(
         return;
       }
 
-      // Verify this station is assigned to this SOS
-      if (incident.assigned_station_id !== stationId) {
-        res.status(403).json({ error: 'Station is not assigned to this SOS' });
+      // If station is not yet assigned, auto-assign it (handles pre-auto-dispatch records)
+      if (!incident.assigned_station_id) {
+        await dbQuery('UPDATE sos_incidents SET assigned_station_id=$1 WHERE id=$2', [stationId, sosId]);
+      } else if (incident.assigned_station_id !== stationId) {
+        res.status(403).json({ error: 'Another station is already handling this SOS' });
         return;
       }
 
