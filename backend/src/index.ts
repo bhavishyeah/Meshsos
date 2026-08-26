@@ -44,7 +44,7 @@ app.use(
 // ─── CORS ───────────────────────────────────────────────────────────────────
 // Whitelist origins from environment variable (comma-separated) (Req 38.6)
 const corsOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+  ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim().replace(/\/$/, ''))
   : true; // Allow all in development when not configured
 
 app.use(
