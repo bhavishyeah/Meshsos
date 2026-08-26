@@ -14,6 +14,7 @@ import { broadcastDispatchAssignment, broadcastStateChange } from '../websocket/
 import { startEscalation, handleResponse } from './escalation.service.js';
 import { record } from './audit.service.js';
 import { query } from '../db/index.js';
+import { notifySOSStateChange } from './push.service.js';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -140,6 +141,19 @@ export async function handleAcceptResponse(
       newState: 'dispatched',
       actorId: responderId,
       timestamp: new Date(),
+    });
+
+    // 5. Send push notification to survivor (non-blocking)
+    query<{ user_id: string | null; user_session_id: string | null }>(
+      `SELECT user_id, user_session_id FROM sos_incidents WHERE id = $1`,
+      [incidentId]
+    ).then((result) => {
+      if (result.rows.length > 0) {
+        const { user_id, user_session_id } = result.rows[0];
+        return notifySOSStateChange(incidentId, 'dispatched', user_id, user_session_id);
+      }
+    }).catch((pushErr) => {
+      console.error('Push notification failed for dispatch accept:', pushErr);
     });
 
     return { success: true };

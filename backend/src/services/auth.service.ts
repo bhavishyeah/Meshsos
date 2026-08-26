@@ -333,6 +333,81 @@ export async function cleanExpiredSessions(): Promise<number> {
 }
 
 /**
+ * Issue tokens for a user after successful MFA verification.
+ * Creates a new session and returns access token, refresh token, and user info.
+ */
+export async function loginAfterMFA(
+  userId: string,
+  deviceInfo?: Record<string, unknown>
+): Promise<LoginResult> {
+  // Fetch user data
+  const userResult = await query<{
+    id: string;
+    role: string;
+    name: string | null;
+    email: string;
+  }>(
+    'SELECT id, role, name, email FROM users WHERE id = $1',
+    [userId]
+  );
+
+  if (userResult.rows.length === 0) {
+    throw new AuthError('User not found', 404);
+  }
+
+  const user = userResult.rows[0];
+
+  // Create session
+  const expiresAt = new Date(Date.now() + REFRESH_TOKEN_EXPIRY_MS);
+
+  const tokenPayload: TokenPayload = {
+    userId: user.id,
+    role: user.role,
+    sessionId: 'pending',
+  };
+
+  const refreshToken = generateRefreshToken(tokenPayload);
+  const tokenHash = hashToken(refreshToken);
+
+  const sessionResult = await query<{ id: string }>(
+    `INSERT INTO sessions (user_id, token_hash, device_info, expires_at, last_active_at)
+     VALUES ($1, $2, $3, $4, NOW())
+     RETURNING id`,
+    [user.id, tokenHash, deviceInfo ? JSON.stringify(deviceInfo) : null, expiresAt]
+  );
+
+  const sessionId = sessionResult.rows[0].id;
+
+  // Generate final tokens with correct session ID
+  const finalPayload: TokenPayload = {
+    userId: user.id,
+    role: user.role,
+    sessionId,
+  };
+
+  const accessToken = generateAccessToken(finalPayload);
+  const finalRefreshToken = generateRefreshToken(finalPayload);
+
+  // Update the token hash with the final refresh token
+  const finalTokenHash = hashToken(finalRefreshToken);
+  await query('UPDATE sessions SET token_hash = $1 WHERE id = $2', [
+    finalTokenHash,
+    sessionId,
+  ]);
+
+  return {
+    accessToken,
+    refreshToken: finalRefreshToken,
+    user: {
+      id: user.id,
+      role: user.role,
+      name: user.name,
+      email: user.email,
+    },
+  };
+}
+
+/**
  * Custom error class for auth-related errors.
  */
 export class AuthError extends Error {

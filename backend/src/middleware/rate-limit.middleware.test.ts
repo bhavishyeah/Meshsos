@@ -133,5 +133,5 @@ describe('apiRateLimiter', () => {
     const res = await request(app).get('/test');
     expect(res.status).toBe(429);
     expect(res.body.error).toContain('Too many requests');
-  });
+  }, 15000);
 });

@@ -310,6 +310,120 @@ export function clearLocationThrottles(): void {
   locationUpdateThrottles.clear();
 }
 
+// ─── List All Responders (Admin) ────────────────────────────────────────────
+
+export interface ResponderListItem {
+  id: string;
+  userId: string;
+  name: string | null;
+  type: ResponderType;
+  status: ResponderStatus;
+  stationId: string | null;
+  stationName: string | null;
+  lastLocationTime: Date | null;
+}
+
+interface ResponderListRow {
+  id: string;
+  user_id: string;
+  name: string | null;
+  type: string;
+  status: string;
+  station_id: string | null;
+  station_name: string | null;
+  location_updated_at: Date | null;
+}
+
+/**
+ * List all responders with user name and station name (for admin panel).
+ */
+export async function listAllResponders(): Promise<ResponderListItem[]> {
+  const sql = `
+    SELECT r.id, r.user_id, u.name, r.type, r.status, r.station_id,
+      s.name AS station_name, r.location_updated_at
+    FROM responders r
+    LEFT JOIN users u ON r.user_id = u.id
+    LEFT JOIN stations s ON r.station_id = s.id
+    ORDER BY r.status ASC, r.updated_at DESC
+  `;
+
+  const result = await query<ResponderListRow>(sql, []);
+  return result.rows.map((row) => ({
+    id: row.id,
+    userId: row.user_id,
+    name: row.name,
+    type: row.type as ResponderType,
+    status: row.status as ResponderStatus,
+    stationId: row.station_id,
+    stationName: row.station_name,
+    lastLocationTime: row.location_updated_at ? new Date(row.location_updated_at) : null,
+  }));
+}
+
+// ─── Create Responder ───────────────────────────────────────────────────────
+
+export interface CreateResponderInput {
+  userId: string;
+  stationId: string;
+  type: ResponderType;
+}
+
+/**
+ * Create a new responder record.
+ */
+export async function createResponder(input: CreateResponderInput): Promise<ResponderListItem> {
+  const { userId, stationId, type } = input;
+
+  // Validate type
+  const validTypes: ResponderType[] = ['police', 'medical', 'rescue', 'relief', 'social'];
+  if (!validTypes.includes(type)) {
+    throw new ResponderValidationError(
+      `Invalid responder type: ${type}. Must be one of: ${validTypes.join(', ')}`
+    );
+  }
+
+  const sql = `
+    INSERT INTO responders (user_id, station_id, type, status)
+    VALUES ($1, $2, $3, 'offline')
+    RETURNING id, user_id, station_id, type, status, location_updated_at
+  `;
+
+  const result = await query<{
+    id: string;
+    user_id: string;
+    station_id: string | null;
+    type: string;
+    status: string;
+    location_updated_at: Date | null;
+  }>(sql, [userId, stationId, type]);
+
+  const row = result.rows[0];
+
+  // Fetch user name and station name
+  const detailSql = `
+    SELECT u.name, s.name AS station_name
+    FROM users u
+    LEFT JOIN stations s ON s.id = $2
+    WHERE u.id = $1
+  `;
+  const detailResult = await query<{ name: string | null; station_name: string | null }>(
+    detailSql,
+    [userId, stationId]
+  );
+  const detail = detailResult.rows[0];
+
+  return {
+    id: row.id,
+    userId: row.user_id,
+    name: detail?.name ?? null,
+    type: row.type as ResponderType,
+    status: row.status as ResponderStatus,
+    stationId: row.station_id,
+    stationName: detail?.station_name ?? null,
+    lastLocationTime: row.location_updated_at ? new Date(row.location_updated_at) : null,
+  };
+}
+
 // ─── Error Classes ──────────────────────────────────────────────────────────
 
 /**

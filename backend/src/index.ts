@@ -10,6 +10,9 @@ import { sosRouter } from './routes/sos.routes.js';
 import { stationRouter } from './routes/station.routes.js';
 import { disasterRouter } from './routes/disaster.routes.js';
 import { responderRouter } from './routes/responder.routes.js';
+import { metricsRouter } from './routes/metrics.routes.js';
+import { regionRouter } from './routes/region.routes.js';
+import { userRouter } from './routes/user.routes.js';
 import { initializeWebSocket } from './websocket/index.js';
 import { apiRateLimiter, sosRateLimiter } from './middleware/rate-limit.middleware.js';
 import { MAX_PAYLOAD_SIZE, payloadTooLargeHandler } from './middleware/validation.middleware.js';
@@ -86,6 +89,15 @@ app.use('/api/disasters', disasterRouter);
 
 // Responder routes for status management and queries
 app.use('/api/responders', responderRouter);
+
+// Metrics route for dashboard data
+app.use('/api/metrics', metricsRouter);
+
+// Region routes for geographic region management
+app.use('/api/regions', regionRouter);
+
+// User management routes (admin-only)
+app.use('/api/users', userRouter);
 
 // ─── Error Handlers ─────────────────────────────────────────────────────────
 // Handle payload-too-large errors with consistent JSON response

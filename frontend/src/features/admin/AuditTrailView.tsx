@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useReducer } from 'react';
+import { authFetch } from '../../services/api';
+import { API_BASE_URL } from '../../config/env';
 
 /**
  * Audit Trail Query Interface for the Command Center.
@@ -192,8 +194,8 @@ async function fetchAuditTrail(
   params.set('page', String(page));
   params.set('pageSize', String(pageSize));
 
-  const url = `/api/audit?${params.toString()}`;
-  const response = await fetch(url);
+  const url = `${API_BASE_URL}/api/audit?${params.toString()}`;
+  const response = await authFetch(url);
 
   if (!response.ok) {
     throw new Error('Failed to fetch audit trail');

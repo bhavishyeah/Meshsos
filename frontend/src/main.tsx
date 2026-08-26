@@ -1,6 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { App } from './App.tsx';
+import { AuthProvider } from './context/AuthContext.tsx';
+import { SurvivorWebSocketProvider } from './context/SurvivorWebSocketContext.tsx';
 import './i18n';
 import './index.css';
 import { bootstrap } from './bootstrap/index.ts';
@@ -10,6 +12,10 @@ bootstrap();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <App />
+    <AuthProvider>
+      <SurvivorWebSocketProvider>
+        <App />
+      </SurvivorWebSocketProvider>
+    </AuthProvider>
   </React.StrictMode>,
 );

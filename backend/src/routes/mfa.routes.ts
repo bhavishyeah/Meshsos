@@ -4,7 +4,7 @@
  * POST /api/auth/mfa/setup  — Generate TOTP secret and return otpauth URI for QR code
  * POST /api/auth/mfa/verify — Verify a TOTP code (during login or initial setup)
  *
- * Requirements: 37.2
+ * Requirements: 37.2, 1.3
  */
 
 import { Router, Request, Response } from 'express';
@@ -15,6 +15,7 @@ import {
   isPrivilegedRole,
   needsMFASetup,
 } from '../services/mfa.service.js';
+import { loginAfterMFA } from '../services/auth.service.js';
 
 export const mfaRouter = Router();
 
@@ -100,13 +101,23 @@ mfaRouter.post('/verify', async (req: Request, res: Response) => {
       return;
     }
 
-    // MFA verification successful
-    // In a full implementation, this would issue the full access token.
-    // The auth service (task 2.1) handles token issuance; here we confirm MFA passed.
+    // MFA verification successful — issue full access token and refresh cookie
+    const result = await loginAfterMFA(userId);
+
+    // Set refresh token as HTTP-only cookie
+    res.cookie('meshsos_refresh_token', result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: '/api/auth',
+    });
+
     res.status(200).json({
       verified: true,
       mfaComplete: true,
-      message: 'MFA verification successful',
+      accessToken: result.accessToken,
+      user: result.user,
     });
   } catch (error) {
     console.error('MFA verify error:', error);

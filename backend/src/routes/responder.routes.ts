@@ -16,6 +16,8 @@ import {
   updateResponderStatus,
   getResponderById,
   getRespondersByRegion,
+  listAllResponders,
+  createResponder,
   ResponderValidationError,
   VALID_RESPONDER_STATUSES,
 } from '../services/responder.service.js';
@@ -43,6 +45,12 @@ const uuidParamSchema = z.object({
 
 const listQuerySchema = z.object({
   regionId: z.string().uuid().optional(),
+});
+
+const createResponderSchema = z.object({
+  userId: z.string().uuid(),
+  stationId: z.string().uuid(),
+  type: z.enum(['police', 'medical', 'rescue', 'relief', 'social']),
 });
 
 // ─── Routes ─────────────────────────────────────────────────────────────────
@@ -132,8 +140,42 @@ router.get(
 );
 
 /**
+ * POST /api/responders
+ * Create a new responder.
+ * Requires responder:manage permission.
+ */
+router.post(
+  '/',
+  authenticate,
+  authorize('responder:manage'),
+  async (req: Request, res: Response) => {
+    try {
+      const bodyResult = createResponderSchema.safeParse(req.body);
+      if (!bodyResult.success) {
+        res.status(400).json({
+          error: 'Validation failed',
+          details: bodyResult.error.issues,
+        });
+        return;
+      }
+
+      const responder = await createResponder(bodyResult.data);
+      res.status(201).json(responder);
+    } catch (err) {
+      if (err instanceof ResponderValidationError) {
+        res.status(400).json({ error: err.message });
+        return;
+      }
+      console.error('Create responder error:', err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
+
+/**
  * GET /api/responders
- * List responders, optionally filtered by region.
+ * List responders. If regionId is provided, filter by region.
+ * Otherwise return all responders (admin view).
  * Requires responder:read permission.
  */
 router.get(
@@ -145,13 +187,13 @@ router.get(
       const queryResult = listQuerySchema.safeParse(req.query);
       const filters = queryResult.success ? queryResult.data : {};
 
-      if (!filters.regionId) {
-        res.status(400).json({ error: 'regionId query parameter is required' });
-        return;
+      if (filters.regionId) {
+        const responders = await getRespondersByRegion(filters.regionId);
+        res.status(200).json({ responders });
+      } else {
+        const responders = await listAllResponders();
+        res.status(200).json({ responders });
       }
-
-      const responders = await getRespondersByRegion(filters.regionId);
-      res.status(200).json({ responders });
     } catch (err) {
       console.error('List responders error:', err);
       res.status(500).json({ error: 'Internal server error' });

@@ -13,3 +13,7 @@ export const API_BASE_URL: string =
 /** Base URL for WebSocket connection (protocol + host, no path) */
 export const WS_URL: string =
   import.meta.env.VITE_WS_URL ?? (API_BASE_URL || window.location.origin);
+
+/** VAPID public key for Web Push subscription (base64url-encoded) */
+export const VAPID_PUBLIC_KEY: string =
+  import.meta.env.VITE_VAPID_PUBLIC_KEY ?? '';

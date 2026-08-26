@@ -77,6 +77,10 @@ export interface DispatchAssignment {
   emergencyType: EmergencyType;
   priorityBand: PriorityBand;
   timestamp: Date;
+  /** Incident latitude (WGS84) for responder mini-map */
+  latitude?: number;
+  /** Incident longitude (WGS84) for responder mini-map */
+  longitude?: number;
 }
 
 /**
