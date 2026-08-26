@@ -270,8 +270,8 @@ router.get('/station', authenticate, async (req: Request, res: Response) => {
 
     // If no explicit stationId, look up by operator_user_id
     if (!stationId) {
-      const stationResult = await dbQuery<{ id: string }>(
-        `SELECT id FROM stations WHERE operator_user_id = $1 AND status = 'active' LIMIT 1`,
+      const stationResult = await dbQuery<{ id: string; lat: number; lng: number }>(
+        `SELECT id, ST_Y(location::geometry) as lat, ST_X(location::geometry) as lng FROM stations WHERE operator_user_id = $1 AND status = 'active' LIMIT 1`,
         [userId]
       );
       if (stationResult.rows.length > 0) {
@@ -313,7 +313,17 @@ router.get('/station', authenticate, async (req: Request, res: Response) => {
     sql += ` ORDER BY si.created_at DESC LIMIT 100`;
 
     const result = await dbQuery(sql, params);
-    res.status(200).json({ incidents: result.rows, stationId });
+
+    // Fetch station coordinates for the maps link
+    const coordsResult = await dbQuery<{ lat: number; lng: number }>(
+      'SELECT ST_Y(location::geometry) as lat, ST_X(location::geometry) as lng FROM stations WHERE id = $1',
+      [stationId]
+    );
+    const stationCoords = coordsResult.rows[0]
+      ? { stationLat: coordsResult.rows[0].lat, stationLng: coordsResult.rows[0].lng }
+      : {};
+
+    res.status(200).json({ incidents: result.rows, stationId, ...stationCoords });
   } catch (err) {
     console.error('Get station SOS error:', err);
     res.status(500).json({ error: 'Internal server error' });

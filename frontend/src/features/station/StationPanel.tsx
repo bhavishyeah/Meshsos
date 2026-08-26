@@ -62,6 +62,8 @@ function formatTimeAgo(dateStr: string): string {
 export function StationPanel() {
   const [incidents, setIncidents] = useState<StationSOSIncident[]>([]);
   const [stationId, setStationId] = useState<string | null>(null);
+  const [stationLat, setStationLat] = useState<number | null>(null);
+  const [stationLng, setStationLng] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -78,6 +80,8 @@ export function StationPanel() {
       const data = await response.json();
       setIncidents(data.incidents ?? []);
       setStationId(data.stationId ?? null);
+      setStationLat(data.stationLat ?? null);
+      setStationLng(data.stationLng ?? null);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load incidents');
@@ -239,6 +243,8 @@ export function StationPanel() {
                 incident={incident}
                 onRespond={handleRespond}
                 isLoading={actionLoading === incident.id}
+                stationLat={stationLat}
+                stationLng={stationLng}
               />
             ))}
           </div>
@@ -258,6 +264,8 @@ export function StationPanel() {
                 incident={incident}
                 onRespond={handleRespond}
                 isLoading={false}
+                stationLat={stationLat}
+                stationLng={stationLng}
               />
             ))}
           </div>
@@ -273,9 +281,11 @@ interface StationSOSCardProps {
   incident: StationSOSIncident;
   onRespond: (sosId: string, status: 'responding' | 'arrived' | 'resolved') => void;
   isLoading: boolean;
+  stationLat: number | null;
+  stationLng: number | null;
 }
 
-function StationSOSCard({ incident, onRespond, isLoading }: StationSOSCardProps) {
+function StationSOSCard({ incident, onRespond, isLoading, stationLat, stationLng }: StationSOSCardProps) {
   const config = EMERGENCY_CONFIG[incident.emergency_type] ?? {
     icon: '\u{26A0}\u{FE0F}',
     label: incident.emergency_type,
@@ -359,7 +369,7 @@ function StationSOSCard({ incident, onRespond, isLoading }: StationSOSCardProps)
       {/* Location - critical for police/hospital to find the survivor */}
       {incident.latitude && incident.longitude && (
         <a
-          href={`https://www.google.com/maps/dir/?api=1&destination=${incident.latitude},${incident.longitude}`}
+          href={`https://www.google.com/maps/dir/?api=1${stationLat && stationLng ? `&origin=${stationLat},${stationLng}` : ''}&destination=${incident.latitude},${incident.longitude}`}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2 mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-700 hover:bg-blue-100 transition-colors"
