@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { LocalSOSRecord, EmergencyType, SOSStatus } from '@meshsos/shared';
 import { sosRepository } from '../../db/sos-repository';
+import { useSurvivorWebSocket } from '../../context/SurvivorWebSocketContext';
 
 /**
  * Configuration for emergency type display.
@@ -33,12 +34,17 @@ function getStatusBadgeConfig(status: SOSStatus): StatusBadgeConfig {
     case 'sending':
       return { label: 'Queued', colorClasses: 'bg-yellow-100 text-yellow-800' };
     case 'delivered':
-    case 'acknowledged':
-    case 'dispatched':
-    case 'enRoute':
-    case 'arrived':
-    case 'resolved':
       return { label: 'Delivered', colorClasses: 'bg-green-100 text-green-800' };
+    case 'acknowledged':
+      return { label: 'Acknowledged', colorClasses: 'bg-blue-100 text-blue-800' };
+    case 'dispatched':
+      return { label: 'Dispatched', colorClasses: 'bg-indigo-100 text-indigo-800' };
+    case 'enRoute':
+      return { label: 'En Route', colorClasses: 'bg-purple-100 text-purple-800' };
+    case 'arrived':
+      return { label: 'Arrived', colorClasses: 'bg-teal-100 text-teal-800' };
+    case 'resolved':
+      return { label: 'Resolved', colorClasses: 'bg-gray-100 text-gray-600' };
     case 'failed':
       return { label: 'Failed', colorClasses: 'bg-red-100 text-red-800' };
     case 'permanentlyFailed':
@@ -99,6 +105,7 @@ export function QueueListView({ onSelectRecord, onRefresh }: QueueListViewProps)
   const [records, setRecords] = useState<LocalSOSRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const { queueVersion, responderInfo } = useSurvivorWebSocket();
 
   const loadRecords = useCallback(async () => {
     const allRecords = await sosRepository.getAll();
@@ -113,6 +120,13 @@ export function QueueListView({ onSelectRecord, onRefresh }: QueueListViewProps)
   useEffect(() => {
     loadRecords();
   }, [loadRecords]);
+
+  // Re-load records when queueVersion changes (triggered by WebSocket state updates)
+  useEffect(() => {
+    if (queueVersion > 0) {
+      loadRecords();
+    }
+  }, [queueVersion, loadRecords]);
 
   const handleRefresh = useCallback(async () => {
     if (isRefreshing) return;
@@ -211,6 +225,16 @@ export function QueueListView({ onSelectRecord, onRefresh }: QueueListViewProps)
                           {formatRelativeTime(record.createdAt)}
                         </time>
                       </div>
+
+                      {/* Responder info when en route */}
+                      {record.status === 'enRoute' && responderInfo?.sosId === record.id && (
+                        <div
+                          className="mt-1 text-xs text-purple-700 font-medium"
+                          data-testid={`responder-info-${record.id}`}
+                        >
+                          Responder on the way{responderInfo.responderName ? `: ${responderInfo.responderName}` : ''}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </button>

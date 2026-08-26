@@ -8,6 +8,7 @@
 import { query, getClient } from '../db/index.js';
 import { isValidTransition } from '@meshsos/shared';
 import type { SOSStatus, EmergencyType } from '../../../shared/src/types/enums.js';
+import { notifySOSStateChange } from './push.service.js';
 
 // â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -353,7 +354,14 @@ export async function acknowledgeSOS(
     );
 
     await client.query('COMMIT');
-    return { success: true, incident: updateResult.rows[0] };
+
+    // Send push notification to survivor (non-blocking)
+    const incident = updateResult.rows[0];
+    notifySOSStateChange(sosId, targetStatus, incident.user_id, incident.user_session_id).catch((pushErr) => {
+      console.error('Push notification failed for acknowledgeSOS:', pushErr);
+    });
+
+    return { success: true, incident };
   } catch (err) {
     await client.query('ROLLBACK');
     throw err;

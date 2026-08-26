@@ -14,6 +14,12 @@ vi.mock('../db/sos-repository', () => ({
   },
 }));
 
+// Mock getOrCreateSessionId from db/index
+vi.mock('../db/index', () => ({
+  getOrCreateSessionId: vi.fn().mockResolvedValue('mock-session-id-123'),
+  db: {},
+}));
+
 function createMockConnectivityManager(
   initialState: ConnectivityState['status'] = 'connected'
 ): ConnectivityManager & {

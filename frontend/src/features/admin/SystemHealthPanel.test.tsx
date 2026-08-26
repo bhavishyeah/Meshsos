@@ -135,7 +135,7 @@ describe('SystemHealthPanel', () => {
 
       // Initial fetch
       expect(mockFetch).toHaveBeenCalledTimes(1);
-      expect(mockFetch).toHaveBeenCalledWith('/api/health');
+      expect(mockFetch).toHaveBeenCalledWith('/api/health', expect.any(Object));
 
       // Advance 30s
       await act(async () => {
@@ -159,7 +159,7 @@ describe('SystemHealthPanel', () => {
         render(<SystemHealthPanel apiBaseUrl="http://localhost:3001/api" />);
       });
 
-      expect(mockFetch).toHaveBeenCalledWith('http://localhost:3001/api/health');
+      expect(mockFetch).toHaveBeenCalledWith('http://localhost:3001/api/health', expect.any(Object));
     });
 
     it('stops polling on unmount', async () => {

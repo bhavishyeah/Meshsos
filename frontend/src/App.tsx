@@ -4,14 +4,28 @@ import { applyLanguageFromProfile } from './i18n';
 import { CommandCenter } from './features/command-center';
 import { HomeScreen } from './features/home';
 import { QueueListView } from './features/queue/QueueListView';
+import { SOSTimelineView } from './features/history/SOSTimelineView';
+import { LoginPage } from './features/auth/LoginPage';
+import { AdminPanel } from './features/admin/AdminPanel';
+import { ResponderView } from './features/responder/ResponderView';
+import { ProfileScreen } from './features/profile/ProfileScreen';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import { BottomNav } from './components/BottomNav';
+import { connectivityManager } from './bootstrap';
+import type { ConnectivityState } from '@meshsos/shared';
 
 /**
  * Simple hash-router for MeshSOS.
  *
  * Routes:
- *   #/               - Survivor home (emergency buttons)
- *   #/queue          - SOS queue (local records)
- *   #/command-center - Dispatcher/supervisor live view
+ *   #/               - Survivor home (emergency buttons) [public]
+ *   #/queue          - SOS queue (local records) [public]
+ *   #/login          - Login page [public]
+ *   #/admin          - Admin panel [requires: administrator]
+ *   #/admin/:tab     - Admin panel sub-pages [requires: administrator]
+ *   #/command-center - Dispatcher/supervisor live view [requires: dispatcher, supervisor, administrator]
+ *   #/responder      - Responder mobile view [requires: responder]
+ *   #/profile        - User profile [requires: any authenticated]
  */
 function useHashRoute(): string {
   const [route, setRoute] = useState(window.location.hash.slice(1) || '/');
@@ -23,21 +37,106 @@ function useHashRoute(): string {
   return route;
 }
 
+/**
+ * Hook to reactively track connectivity status from the connectivityManager.
+ */
+function useIsOnline(): boolean {
+  const [isOnline, setIsOnline] = useState(
+    () => connectivityManager.getState().status !== 'offline'
+  );
+  useEffect(() => {
+    const unsubscribe = connectivityManager.subscribe((state: ConnectivityState) => {
+      setIsOnline(state.status !== 'offline');
+    });
+    return unsubscribe;
+  }, []);
+  return isOnline;
+}
+
 export function App() {
   const { t } = useTranslation();
   const route = useHashRoute();
+  const isOnline = useIsOnline();
 
   useEffect(() => {
     applyLanguageFromProfile();
   }, []);
 
-  // --- Command Center (dispatcher/supervisor) ---
-  if (route === '/command-center') {
-    return <CommandCenter />;
+  // --- Login (public) ---
+  if (route === '/login') {
+    return <LoginPage />;
   }
 
-  // --- SOS Queue ---
-  if (route === '/queue') {
+  // --- Admin Panel (requires administrator) ---
+  if (route === '/admin' || route.startsWith('/admin/')) {
+    return (
+      <ProtectedRoute allowedRoles={['administrator']}>
+        <AdminPanel />
+      </ProtectedRoute>
+    );
+  }
+
+  // --- Command Center (requires dispatcher, supervisor, administrator) ---
+  if (route === '/command-center') {
+    return (
+      <ProtectedRoute allowedRoles={['dispatcher', 'supervisor', 'administrator']}>
+        <CommandCenter />
+      </ProtectedRoute>
+    );
+  }
+
+  // --- Responder View (requires responder) ---
+  if (route === '/responder') {
+    return (
+      <ProtectedRoute allowedRoles={['responder']}>
+        <ResponderView />
+      </ProtectedRoute>
+    );
+  }
+
+  // --- Profile (requires any authenticated user) ---
+  if (route === '/profile') {
+    return (
+      <ProtectedRoute allowedRoles={['administrator', 'dispatcher', 'supervisor', 'responder', 'auditor']}>
+        <div className="flex flex-col h-screen">
+          <ProfileScreen />
+          <BottomNav currentRoute={route} />
+        </div>
+      </ProtectedRoute>
+    );
+  }
+
+  // --- SOS Queue (public) ---
+  if (route === '/queue' || route.startsWith('/queue/')) {
+    // Check if we're at #/queue/:id (detail view)
+    const queueIdMatch = route.match(/^\/queue\/(.+)$/);
+
+    if (queueIdMatch) {
+      const sosId = queueIdMatch[1];
+      return (
+        <div className="flex flex-col h-screen">
+          <div className="flex items-center p-4 border-b border-gray-200">
+            <button
+              type="button"
+              onClick={() => { window.location.hash = '#/queue'; }}
+              className="inline-flex items-center gap-1 text-sm font-medium text-blue-700 hover:text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded min-h-[48px] min-w-[48px]"
+              aria-label="Back to queue"
+            >
+              <span aria-hidden="true">&larr;</span>
+              <span>Back</span>
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            <SOSTimelineView
+              sosId={sosId}
+              isOnline={isOnline}
+            />
+          </div>
+          <BottomNav currentRoute={route} />
+        </div>
+      );
+    }
+
     return (
       <div className="flex flex-col h-screen">
         <QueueListView
@@ -50,7 +149,7 @@ export function App() {
     );
   }
 
-  // --- Default: Survivor Home (emergency buttons) ---
+  // --- Default: Survivor Home (public) ---
   return (
     <div className="flex flex-col h-screen">
       <HomeScreen
@@ -64,45 +163,3 @@ export function App() {
   );
 }
 
-/**
- * Bottom navigation for survivor-facing pages.
- */
-function BottomNav({ currentRoute }: { currentRoute: string }) {
-  return (
-    <nav
-      className="flex items-center justify-around border-t border-gray-200 bg-white py-2 px-4 shrink-0"
-      aria-label="Main navigation"
-    >
-      <a
-        href="#/"
-        className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors min-h-[48px] min-w-[48px] justify-center ${
-          currentRoute === '/' ? 'text-red-600 bg-red-50' : 'text-gray-600 hover:text-gray-900'
-        }`}
-        aria-current={currentRoute === '/' ? 'page' : undefined}
-      >
-        <span className="text-xl" aria-hidden="true">🆘</span>
-        <span>SOS</span>
-      </a>
-      <a
-        href="#/queue"
-        className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors min-h-[48px] min-w-[48px] justify-center ${
-          currentRoute === '/queue' ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:text-gray-900'
-        }`}
-        aria-current={currentRoute === '/queue' ? 'page' : undefined}
-      >
-        <span className="text-xl" aria-hidden="true">📋</span>
-        <span>Queue</span>
-      </a>
-      <a
-        href="#/command-center"
-        className={`flex flex-col items-center gap-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors min-h-[48px] min-w-[48px] justify-center ${
-          currentRoute === '/command-center' ? 'text-green-600 bg-green-50' : 'text-gray-600 hover:text-gray-900'
-        }`}
-        aria-current={currentRoute === '/command-center' ? 'page' : undefined}
-      >
-        <span className="text-xl" aria-hidden="true">🖥️</span>
-        <span>Command</span>
-      </a>
-    </nav>
-  );
-}

@@ -1,0 +1,638 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Create fetch wrapper with auth headers and 401 refresh-retry logic": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728504580
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728520629
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728921410
+      }
+    ],
+    "1.2 Create AuthContext provider with login/logout/refresh": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728504655
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728936632
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787729411953
+      }
+    ],
+    "1.3 Create ProtectedRoute component with role-based guards": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728504698
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787729437555
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787729707382
+      }
+    ],
+    "2.1 Create LoginPage component": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728504775
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787729725506
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787730037909
+      }
+    ],
+    "2.2 Handle MFA verification flow": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728504813
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787730052093
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787730682177
+      }
+    ],
+    "2.3 Handle MFA setup flow": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728504855
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787730052929
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787730682796
+      }
+    ],
+    "3.1 Enhance App.tsx with full route structure": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728504895
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787730053906
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787730683527
+      }
+    ],
+    "3.2 Make bottom navigation adaptive based on auth state": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728504934
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787730054850
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787730684354
+      }
+    ],
+    "4.1 Create user service (createUser, listUsers)": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728504973
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728936721
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787729412595
+      }
+    ],
+    "4.2 Create user routes (POST/GET /api/users)": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728505008
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787729438965
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787729705264
+      }
+    ],
+    "5.1 Create region service (createRegion, listRegions, updateRegion)": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728505049
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728937362
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787729413496
+      }
+    ],
+    "5.2 Create region routes (POST/GET/PATCH /api/regions)": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728505090
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787729438281
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787729705996
+      }
+    ],
+    "6.1 Add GET /api/sos/:id/dispatch-options route": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728505134
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728938479
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787729411270
+      }
+    ],
+    "6.2 Add POST /api/sos/:id/dispatch route": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728505174
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728939259
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787729410605
+      }
+    ],
+    "6.3 Create metrics route (GET /api/metrics)": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728505215
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787729439702
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787729706696
+      }
+    ],
+    "7.1 Create AdminPanel layout with sidebar navigation": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728505266
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787730712422
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787731194579
+      }
+    ],
+    "7.2 Wire existing admin components to backend with auth": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728505326
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787731214623
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787732214796
+      }
+    ],
+    "7.3 Create UserManagement component": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728505362
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787731215172
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787732215347
+      }
+    ],
+    "7.4 Create ResponderManagement component": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728505402
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787731215887
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787732215999
+      }
+    ],
+    "7.5 Create RegionManagement component with map polygon drawing": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728505444
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787732270981
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787734058133
+      }
+    ],
+    "8.1 Create ResponderView component": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728505482
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787730713030
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787731194899
+      }
+    ],
+    "8.2 Implement dispatch assignment card with Accept/Decline": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728505522
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787731216971
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787732216662
+      }
+    ],
+    "8.3 Implement GPS tracking and location sharing": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728505567
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787732269628
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787734058722
+      }
+    ],
+    "8.4 Implement mini-map and status update buttons": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728505611
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787732270272
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787734059412
+      }
+    ],
+    "9.1 Wire incident selection to details panel": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728505653
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787730713726
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787731195567
+      }
+    ],
+    "9.2 Wire acknowledge → dispatch options → assign flow": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728505695
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787731218103
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787732217372
+      }
+    ],
+    "10.1 Wire delivered records to SOSTimelineView": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728505736
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787732272024
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787734060085
+      }
+    ],
+    "10.2 Establish survivor WebSocket for real-time status updates": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728505774
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787732273004
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787734060856
+      }
+    ],
+    "10.3 Trigger push notification registration after first delivery": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728505815
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787734081570
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787734951493
+      }
+    ],
+    "11.1 Send push notifications on SOS state transitions": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728505854
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787734082624
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787734952047
+      }
+    ],
+    "12.1 Verify full build passes (shared + frontend + backend)": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728505893
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787735002991
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787735158709
+      }
+    ],
+    "12.2 Verify backend tests still pass": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728505937
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787735195066
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787735384935
+      }
+    ],
+    "12.3 Push to GitHub and verify deployments": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787728505986
+      },
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787735401393
+      }
+    ],
+    "4. Backend: User Management Endpoints": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787729705390
+      }
+    ],
+    "5. Backend: Region Management Endpoints": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787729706095
+      }
+    ],
+    "6. Backend: Dispatch & Metrics Endpoints": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787729706798
+      }
+    ],
+    "1. AuthContext & API Service Layer": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787729707512
+      }
+    ],
+    "2. Login & MFA Pages": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787730682902
+      }
+    ],
+    "3. Route Guards & Navigation Enhancement": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787730684435
+      }
+    ],
+    "9. Command Center Dispatch Wiring": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787732217445
+      }
+    ],
+    "7. Admin Panel UI": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787734058224
+      }
+    ],
+    "8. Responder View": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787734059496
+      }
+    ],
+    "10. Survivor Status Tracking Enhancement": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787734951575
+      }
+    ],
+    "11. Push Notification Backend Triggers": [
+      {
+        "executionId": "1f231090-de18-4207-be44-109a75da6192",
+        "chatSessionId": "sess_a18496ff-e464-4629-b618-0cb83e9a34eb",
+        "timestamp": 1787734952206
+      }
+    ]
+  }
+}

@@ -1,6 +1,8 @@
 import type { ConnectivityState, LocalSOSRecord } from '@meshsos/shared';
 import type { ConnectivityManager } from './connectivity.service';
 import { sosRepository } from '../db/sos-repository';
+import { getOrCreateSessionId } from '../db/index';
+import { triggerPushRegistration } from './push-registration-trigger';
 
 /**
  * Configuration for the SyncEngine.
@@ -141,6 +143,7 @@ export class SyncEngineImpl implements SyncEngine {
    */
   private async attemptDelivery(record: LocalSOSRecord): Promise<void> {
     try {
+      const sessionId = await getOrCreateSessionId();
       const response = await fetch(`${this.config.apiBaseUrl}/sos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -156,6 +159,7 @@ export class SyncEngineImpl implements SyncEngine {
           peopleCount: record.peopleCount,
           situationType: record.situationType,
           description: record.description,
+          sessionId,
         }),
       });
 
@@ -164,6 +168,9 @@ export class SyncEngineImpl implements SyncEngine {
         await sosRepository.updateStatus(record.id, 'delivered');
         // Clear any pending retry timer for this record
         this.clearRetryTimer(record.id);
+        // Trigger push notification registration after first delivery (non-blocking)
+        // Requirement 10.1: Prompt for notification permission after first SOS delivery
+        triggerPushRegistration();
       } else {
         await this.handleFailure(record);
       }

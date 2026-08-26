@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { SOSStatus } from '@meshsos/shared';
 import { sosRepository } from '../../db/sos-repository';
+import { authFetch } from '../../services/api';
+import { API_BASE_URL } from '../../config/env';
 
 /**
  * A single timeline event as returned by the backend GET /api/sos/:id/timeline.
@@ -80,10 +82,10 @@ function formatTimestamp(timestamp: string | Date): string {
 }
 
 /**
- * Fetch timeline events from the backend API.
+ * Fetch timeline events from the backend API using authenticated fetch.
  */
 async function fetchTimelineFromBackend(sosId: string): Promise<TimelineEvent[]> {
-  const response = await fetch(`/api/sos/${sosId}/timeline`);
+  const response = await authFetch(`${API_BASE_URL}/api/sos/${sosId}/timeline`);
   if (!response.ok) {
     throw new Error(`Failed to fetch timeline: ${response.status}`);
   }

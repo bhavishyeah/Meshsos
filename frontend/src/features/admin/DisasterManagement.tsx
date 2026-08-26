@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
+import { authFetch } from '../../services/api';
+import { API_BASE_URL } from '../../config/env';
 
 /**
  * Disaster Event Management UI for the Command Center.
@@ -124,8 +126,8 @@ async function fetchDisasters(statusFilter?: DisasterStatus): Promise<DisasterEv
   if (statusFilter) {
     params.set('status', statusFilter);
   }
-  const url = `/api/disasters${params.toString() ? `?${params.toString()}` : ''}`;
-  const response = await fetch(url);
+  const url = `${API_BASE_URL}/api/disasters${params.toString() ? `?${params.toString()}` : ''}`;
+  const response = await authFetch(url);
   if (!response.ok) {
     throw new Error('Failed to fetch disasters');
   }
@@ -134,7 +136,7 @@ async function fetchDisasters(statusFilter?: DisasterStatus): Promise<DisasterEv
 }
 
 async function createDisasterApi(input: CreateDisasterInput): Promise<DisasterEvent> {
-  const response = await fetch('/api/disasters', {
+  const response = await authFetch(`${API_BASE_URL}/api/disasters`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
@@ -147,9 +149,10 @@ async function createDisasterApi(input: CreateDisasterInput): Promise<DisasterEv
 }
 
 async function resolveDisasterApi(id: string): Promise<DisasterEvent> {
-  const response = await fetch(`/api/disasters/${id}/resolve`, {
+  const response = await authFetch(`${API_BASE_URL}/api/disasters/${id}/resolve`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
   });
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));

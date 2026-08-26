@@ -20,6 +20,7 @@ import { isValidTransition } from '@meshsos/shared';
 import type { SOSStatus, ResponderStatus } from '../../../shared/src/types/enums.js';
 import { record } from './audit.service.js';
 import { broadcastStateChange } from '../websocket/index.js';
+import { notifySOSStateChange } from './push.service.js';
 
 // â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -44,6 +45,7 @@ interface SOSRow {
   status: SOSStatus;
   assigned_responder_id: string | null;
   user_session_id: string | null;
+  user_id: string | null;
 }
 
 // â”€â”€â”€ Internal Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -72,7 +74,7 @@ async function performTransition(
 
     // Lock the SOS row and get current state
     const sosResult = await client.query<SOSRow>(
-      `SELECT status, assigned_responder_id, user_session_id
+      `SELECT status, assigned_responder_id, user_session_id, user_id
        FROM sos_incidents WHERE id = $1 FOR UPDATE`,
       [incidentId]
     );
@@ -82,7 +84,7 @@ async function performTransition(
       return { success: false, error: 'SOS incident not found', statusCode: 404 };
     }
 
-    const { status: currentStatus, assigned_responder_id, user_session_id } = sosResult.rows[0];
+    const { status: currentStatus, assigned_responder_id, user_session_id, user_id } = sosResult.rows[0];
 
     // Validate that the responder is assigned to this incident
     if (assigned_responder_id !== responderId) {
@@ -171,6 +173,11 @@ async function performTransition(
       // WebSocket broadcast failure is non-blocking
       console.error('WebSocket broadcast failed for workflow transition:', wsErr);
     }
+
+    // Send push notification to survivor (non-blocking)
+    notifySOSStateChange(incidentId, targetState, user_id, user_session_id).catch((pushErr) => {
+      console.error('Push notification failed for workflow transition:', pushErr);
+    });
 
     return {
       success: true,

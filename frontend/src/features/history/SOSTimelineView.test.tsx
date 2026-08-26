@@ -9,9 +9,20 @@ vi.mock('../../db/sos-repository', () => ({
   },
 }));
 
+// Mock the authFetch and API_BASE_URL
+vi.mock('../../services/api', () => ({
+  authFetch: vi.fn(),
+}));
+
+vi.mock('../../config/env', () => ({
+  API_BASE_URL: '',
+}));
+
 import { sosRepository } from '../../db/sos-repository';
+import { authFetch } from '../../services/api';
 
 const mockGetById = vi.mocked(sosRepository.getById);
+const mockAuthFetch = vi.mocked(authFetch);
 
 /**
  * Mock timeline data simulating a full lifecycle.
@@ -62,11 +73,11 @@ const MOCK_TIMELINE_EVENTS: TimelineEvent[] = [
 describe('SOSTimelineView', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    // Default: global fetch returns mock events
-    global.fetch = vi.fn().mockResolvedValue({
+    // Default: authFetch returns mock events
+    mockAuthFetch.mockResolvedValue({
       ok: true,
       json: async () => ({ events: MOCK_TIMELINE_EVENTS }),
-    });
+    } as Response);
   });
 
   afterEach(() => {
@@ -74,8 +85,8 @@ describe('SOSTimelineView', () => {
   });
 
   it('shows loading state initially', () => {
-    // Make fetch hang to see loading state
-    global.fetch = vi.fn().mockImplementation(() => new Promise(() => {}));
+    // Make authFetch hang to see loading state
+    mockAuthFetch.mockImplementation(() => new Promise(() => {}));
 
     render(<SOSTimelineView sosId="sos-123" isOnline={true} />);
     expect(screen.getByRole('status', { name: /loading timeline/i })).toBeInTheDocument();
@@ -97,7 +108,7 @@ describe('SOSTimelineView', () => {
     render(<SOSTimelineView sosId="sos-123" isOnline={true} />);
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith('/api/sos/sos-123/timeline');
+      expect(mockAuthFetch).toHaveBeenCalledWith('/api/sos/sos-123/timeline');
     });
   });
 
@@ -187,11 +198,11 @@ describe('SOSTimelineView', () => {
     expect(screen.getByText('Queued')).toBeInTheDocument();
 
     // Should not call backend fetch
-    expect(global.fetch).not.toHaveBeenCalled();
+    expect(mockAuthFetch).not.toHaveBeenCalled();
   });
 
   it('shows offline fallback when backend fetch fails', async () => {
-    global.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
+    mockAuthFetch.mockRejectedValue(new Error('Network error'));
 
     mockGetById.mockResolvedValue({
       id: 'sos-123',
@@ -223,7 +234,7 @@ describe('SOSTimelineView', () => {
   });
 
   it('shows error when no local record exists and fetch fails', async () => {
-    global.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
+    mockAuthFetch.mockRejectedValue(new Error('Network error'));
     mockGetById.mockRejectedValue(new Error('DB failure'));
 
     render(<SOSTimelineView sosId="sos-999" isOnline={true} />);
@@ -234,10 +245,10 @@ describe('SOSTimelineView', () => {
   });
 
   it('shows empty state when no events found', async () => {
-    global.fetch = vi.fn().mockResolvedValue({
+    mockAuthFetch.mockResolvedValue({
       ok: true,
       json: async () => ({ events: [] }),
-    });
+    } as Response);
 
     render(<SOSTimelineView sosId="sos-empty" isOnline={true} />);
 

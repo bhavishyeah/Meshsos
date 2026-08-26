@@ -31,6 +31,7 @@ export type Action =
   | 'disaster:manage'
   | 'user:manage'
   | 'audit:read'
+  | 'metrics:read'
   | 'config:manage';
 
 /**
@@ -51,6 +52,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly Action[]> = {
     'sos:dispatch',
     'responder:read',
     'station:read',
+    'metrics:read',
   ],
   supervisor: [
     'sos:read',
@@ -61,6 +63,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly Action[]> = {
     'station:manage',
     'disaster:manage',
     'user:manage',
+    'metrics:read',
   ],
   administrator: [
     'sos:create',
@@ -75,6 +78,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, readonly Action[]> = {
     'disaster:manage',
     'user:manage',
     'audit:read',
+    'metrics:read',
     'config:manage',
   ],
   auditor: ['audit:read', 'sos:read', 'responder:read', 'station:read'],

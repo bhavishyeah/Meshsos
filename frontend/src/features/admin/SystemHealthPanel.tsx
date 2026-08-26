@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { authFetch } from '../../services/api';
+import { API_BASE_URL } from '../../config/env';
 
 /**
  * Health status type matching the backend SystemHealth interface.
@@ -84,7 +86,8 @@ export function SystemHealthPanel({
    */
   const fetchHealth = useCallback(async () => {
     try {
-      const response = await fetch(`${apiBaseUrl}/health`);
+      const url = apiBaseUrl === '/api' ? `${API_BASE_URL}/api/health` : `${apiBaseUrl}/health`;
+      const response = await authFetch(url);
       if (!response.ok) {
         throw new Error(`Health check failed: ${response.status}`);
       }

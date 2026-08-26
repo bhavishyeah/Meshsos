@@ -1,7 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useWebSocket } from '../../hooks/useWebSocket';
 import { WS_URL, API_BASE_URL } from '../../config/env';
+import { authFetch } from '../../services/api';
 import { IncidentQueue, type Incident, type IncidentFilters } from './IncidentQueue';
+import { IncidentDetailsPanel, type TimelineEvent } from './IncidentDetailsPanel';
+import { DispatchPanel } from './DispatchPanel';
 import { LiveMap, type MapIncident, type MapResponder, type MapStation } from './LiveMap';
 import type {
   SOSBroadcast,
@@ -10,6 +13,8 @@ import type {
   LocationUpdate,
   StatusChange,
   SOSStatus,
+  SOSRecord,
+  RankedResponder,
 } from '@meshsos/shared';
 
 /**
@@ -29,11 +34,153 @@ export function CommandCenter() {
   const [responders, setResponders] = useState<MapResponder[]>([]);
   const [stations] = useState<MapStation[]>([]);
   const [selectedIncidentId, setSelectedIncidentId] = useState<string | null>(null);
+  const [selectedIncidentDetails, setSelectedIncidentDetails] = useState<SOSRecord | null>(null);
+  const [selectedIncidentTimeline, setSelectedIncidentTimeline] = useState<TimelineEvent[]>([]);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+  const [dispatchOptions, setDispatchOptions] = useState<RankedResponder[]>([]);
+  const [showDispatchPanel, setShowDispatchPanel] = useState(false);
   const [filters, setFilters] = useState<IncidentFilters>({
     emergencyType: 'all',
     priorityBand: 'all',
     status: 'all',
   });
+
+  // Fetch incident details when an incident is selected
+  const handleSelectIncident = useCallback(async (id: string) => {
+    setSelectedIncidentId(id);
+    setDetailsLoading(true);
+    setSelectedIncidentDetails(null);
+    setSelectedIncidentTimeline([]);
+
+    try {
+      const res = await authFetch(`${API_BASE_URL}/api/sos/${id}`);
+      if (res.ok) {
+        const data = await res.json();
+        const record: SOSRecord = {
+          ...data,
+          createdAt: new Date(data.createdAt ?? data.created_at),
+          updatedAt: new Date(data.updatedAt ?? data.updated_at),
+          timestamp: new Date(data.timestamp ?? data.created_at),
+          locationTimestamp: data.locationTimestamp ? new Date(data.locationTimestamp) : null,
+          emergencyType: data.emergencyType ?? data.emergency_type,
+          priorityBand: data.priorityBand ?? data.priority_band,
+          priorityScore: data.priorityScore ?? data.priority_score ?? 0,
+          regionId: data.regionId ?? data.region_id ?? null,
+          assignedResponderId: data.assignedResponderId ?? data.assigned_responder_id ?? null,
+          disasterEventId: data.disasterEventId ?? data.disaster_event_id ?? null,
+          duplicateFlag: data.duplicateFlag ?? data.duplicate_flag ?? false,
+          duplicateOf: data.duplicateOf ?? data.duplicate_of ?? null,
+          peopleCount: data.peopleCount ?? data.people_count ?? null,
+          situationType: data.situationType ?? data.situation_type ?? null,
+          locationMethod: data.locationMethod ?? data.location_method ?? null,
+        };
+        setSelectedIncidentDetails(record);
+
+        // Fetch timeline if available
+        try {
+          const timelineRes = await authFetch(`${API_BASE_URL}/api/sos/${id}/timeline`);
+          if (timelineRes.ok) {
+            const timelineData = await timelineRes.json();
+            if (Array.isArray(timelineData.events)) {
+              setSelectedIncidentTimeline(
+                timelineData.events.map((e: Record<string, unknown>) => ({
+                  id: e.id as string,
+                  timestamp: new Date(e.timestamp as string),
+                  eventType: e.eventType ?? e.event_type ?? 'unknown',
+                  previousState: e.previousState ?? e.previous_state,
+                  newState: e.newState ?? e.new_state,
+                  actorId: e.actorId ?? e.actor_id,
+                  description: e.description as string ?? '',
+                }))
+              );
+            }
+          }
+        } catch {
+          // Timeline fetch is optional, don't block on failure
+        }
+      }
+    } catch {
+      // Silently handle fetch failures — panel will remain empty
+    } finally {
+      setDetailsLoading(false);
+    }
+  }, []);
+
+  // Close the details panel
+  const handleCloseDetails = useCallback(() => {
+    setSelectedIncidentId(null);
+    setSelectedIncidentDetails(null);
+    setSelectedIncidentTimeline([]);
+    setShowDispatchPanel(false);
+    setDispatchOptions([]);
+  }, []);
+
+  // Handle acknowledge action
+  const handleAcknowledge = useCallback(async () => {
+    if (!selectedIncidentId) return;
+
+    try {
+      const res = await authFetch(`${API_BASE_URL}/api/sos/${selectedIncidentId}/ack`, {
+        method: 'POST',
+        body: JSON.stringify({}),
+      });
+      if (res.ok) {
+        // Update local state
+        setIncidents((prev) =>
+          prev.map((inc) =>
+            inc.id === selectedIncidentId ? { ...inc, status: 'acknowledged' as SOSStatus } : inc
+          )
+        );
+        setSelectedIncidentDetails((prev) =>
+          prev ? { ...prev, status: 'acknowledged' as SOSStatus } : prev
+        );
+
+        // Fetch dispatch options after successful acknowledge
+        try {
+          const optionsRes = await authFetch(`${API_BASE_URL}/api/sos/${selectedIncidentId}/dispatch-options`);
+          if (optionsRes.ok) {
+            const optionsData = await optionsRes.json();
+            if (Array.isArray(optionsData.responders)) {
+              setDispatchOptions(optionsData.responders.map(mapApiResponder));
+              setShowDispatchPanel(true);
+            }
+          }
+        } catch {
+          // Dispatch options fetch failure — panel won't show
+        }
+      }
+    } catch {
+      // Silently handle failure
+    }
+  }, [selectedIncidentId]);
+
+  // Handle dispatch assignment
+  const handleDispatch = useCallback(async (responderId: string) => {
+    if (!selectedIncidentId) return;
+
+    try {
+      const res = await authFetch(`${API_BASE_URL}/api/sos/${selectedIncidentId}/dispatch`, {
+        method: 'POST',
+        body: JSON.stringify({ responderId }),
+      });
+      if (res.ok) {
+        // Update local incident state to dispatched
+        setIncidents((prev) =>
+          prev.map((inc) =>
+            inc.id === selectedIncidentId ? { ...inc, status: 'dispatched' as SOSStatus } : inc
+          )
+        );
+        setSelectedIncidentDetails((prev) =>
+          prev ? { ...prev, status: 'dispatched' as SOSStatus, assignedResponderId: responderId } : prev
+        );
+        // Hide dispatch panel after successful assignment
+        setShowDispatchPanel(false);
+        setDispatchOptions([]);
+      }
+    } catch {
+      // Silently handle failure
+    }
+  }, [selectedIncidentId]);
 
   // Connect WebSocket on mount
   useEffect(() => {
@@ -181,7 +328,7 @@ export function CommandCenter() {
         </h2>
         <IncidentQueue
           incidents={incidents}
-          onSelectIncident={setSelectedIncidentId}
+          onSelectIncident={handleSelectIncident}
           filters={filters}
           onFilterChange={setFilters}
         />
@@ -196,19 +343,64 @@ export function CommandCenter() {
           center={{ lat: 20.5937, lng: 78.9629 }}
           zoom={5}
         />
-        {selectedIncidentId && (
-          <div className="absolute bottom-4 left-4 bg-white rounded-lg shadow-lg p-4 max-w-sm z-40">
-            <p className="text-sm font-medium">Selected: {selectedIncidentId}</p>
+      </main>
+
+      {/* Right panel: Incident details slide-over */}
+      {selectedIncidentId && (
+        <aside
+          className="w-96 max-w-full border-l border-gray-200 flex flex-col overflow-hidden bg-white shadow-lg z-40"
+          data-testid="incident-details-drawer"
+          role="complementary"
+          aria-label="Incident details"
+        >
+          {/* Drawer header with close button */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+            <h2 className="font-semibold text-lg">Incident Details</h2>
             <button
               type="button"
-              onClick={() => setSelectedIncidentId(null)}
-              className="mt-2 text-xs text-blue-600 hover:underline"
+              onClick={handleCloseDetails}
+              className="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded p-1 min-h-[44px] min-w-[44px] flex items-center justify-center"
+              aria-label="Close details panel"
+              data-testid="close-details-btn"
             >
-              Close
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           </div>
-        )}
-      </main>
+
+          {/* Drawer content */}
+          {detailsLoading ? (
+            <div className="flex-1 flex items-center justify-center" data-testid="details-loading">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" role="status">
+                <span className="sr-only">Loading incident details...</span>
+              </div>
+            </div>
+          ) : selectedIncidentDetails ? (
+            <div className="flex-1 overflow-y-auto">
+              <IncidentDetailsPanel
+                incident={selectedIncidentDetails}
+                timeline={selectedIncidentTimeline}
+                onAcknowledge={selectedIncidentDetails.status === 'delivered' ? handleAcknowledge : undefined}
+              />
+              {/* Dispatch Panel: shown after acknowledge when dispatch options are loaded */}
+              {showDispatchPanel && selectedIncidentId && (
+                <div className="p-4 border-t border-gray-200" data-testid="dispatch-panel-container">
+                  <DispatchPanel
+                    rankedResponders={dispatchOptions}
+                    incidentId={selectedIncidentId}
+                    onDispatch={handleDispatch}
+                  />
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex-1 flex items-center justify-center text-gray-400 p-4" data-testid="details-error">
+              <p>Failed to load incident details</p>
+            </div>
+          )}
+        </aside>
+      )}
     </div>
   );
 }
@@ -225,5 +417,17 @@ function mapApiIncident(raw: Record<string, unknown>): Incident {
     longitude: raw.longitude as number | null,
     regionId: raw.region_id as string | null,
     createdAt: new Date(raw.created_at as string),
+  };
+}
+
+function mapApiResponder(raw: Record<string, unknown>): RankedResponder {
+  return {
+    responderId: (raw.responderId ?? raw.responder_id ?? raw.id) as string,
+    name: raw.name as string,
+    distanceKm: (raw.distanceKm ?? raw.distance_km ?? raw.distance) as number,
+    status: (raw.status ?? 'available') as RankedResponder['status'],
+    locationFreshness: (raw.locationFreshness ?? raw.location_freshness ?? raw.freshness ?? 0) as number,
+    suitabilityScore: (raw.suitabilityScore ?? raw.suitability_score ?? raw.score ?? 0) as number,
+    isFresh: (raw.isFresh ?? raw.is_fresh ?? true) as boolean,
   };
 }
