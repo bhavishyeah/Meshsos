@@ -9,8 +9,14 @@ import { API_BASE_URL } from '../config/env';
 
 // Singleton instances
 export const connectivityManager = new WebConnectivityProvider();
+
+// SyncEngine POSTs to `${apiBaseUrl}/sos`.
+// API_BASE_URL is either empty (same-origin, use '/api') or
+// a full URL like 'https://x.up.railway.app' (append '/api').
+const syncApiBase = API_BASE_URL ? `${API_BASE_URL}/api` : '/api';
+
 export const syncEngine = new SyncEngineImpl(connectivityManager, {
-  apiBaseUrl: API_BASE_URL || '/api',
+  apiBaseUrl: syncApiBase,
   baseRetryMs: 5000,   // 5s initial retry (faster for demo)
   maxRetryMs: 60000,   // 1min max
   maxRetries: 10,
