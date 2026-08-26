@@ -135,6 +135,47 @@ router.post('/', optionalAuthenticate, async (req: Request, res: Response) => {
 });
 
 /**
+ * GET /api/sos
+ * List SOS incidents with optional status filter.
+ * Query params: status (comma-separated statuses), limit (default 100)
+ * No auth required for command center initial load.
+ */
+router.get('/', async (req: Request, res: Response) => {
+  try {
+    const statusFilter = req.query.status as string | undefined;
+    const limit = Math.min(parseInt(req.query.limit as string) || 100, 500);
+
+    let sql = `SELECT
+      id, user_session_id, user_id, emergency_type,
+      ST_Y(location::geometry) as latitude,
+      ST_X(location::geometry) as longitude,
+      accuracy, location_method, location_timestamp,
+      people_count, situation_type, description,
+      priority_score, priority_band, status,
+      region_id, assigned_responder_id, disaster_event_id,
+      duplicate_flag, duplicate_of, created_at, updated_at
+    FROM sos_incidents`;
+
+    const params: (string | number)[] = [];
+    if (statusFilter) {
+      const statuses = statusFilter.split(',').map(s => s.trim());
+      const placeholders = statuses.map((_, i) => `$${i + 1}`).join(',');
+      sql += ` WHERE status IN (${placeholders})`;
+      params.push(...statuses);
+    }
+
+    sql += ` ORDER BY created_at DESC LIMIT $${params.length + 1}`;
+    params.push(limit);
+
+    const { query: dbQuery } = await import('../db/index.js');
+    const result = await dbQuery(sql, params);
+    res.status(200).json({ incidents: result.rows });
+  } catch (err) {
+    console.error('List SOS error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+/**
  * GET /api/sos/history
  * Get the authenticated survivor's SOS history.
  * Must be defined BEFORE /:id to avoid route conflict.
