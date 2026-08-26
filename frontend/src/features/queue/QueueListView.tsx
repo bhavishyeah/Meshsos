@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import type { LocalSOSRecord, EmergencyType, SOSStatus } from '@meshsos/shared';
 import { sosRepository } from '../../db/sos-repository';
 import { useSurvivorWebSocket } from '../../context/SurvivorWebSocketContext';
+import { API_BASE_URL } from '../../config/env';
 
 /**
  * Configuration for emergency type display.
@@ -117,9 +118,33 @@ export function QueueListView({ onSelectRecord, onRefresh }: QueueListViewProps)
     setIsLoading(false);
   }, []);
 
+  // Sync stale local records with backend on load (fixes mobile stuck at 'queued')
+  const syncStaleRecords = useCallback(async () => {
+    try {
+      const allRecords = await sosRepository.getAll();
+      const stale = allRecords.filter(r =>
+        ['queued', 'sending', 'delivered'].includes(r.status)
+      );
+      if (stale.length === 0) return;
+      for (const record of stale) {
+        try {
+          const res = await fetch(`${API_BASE_URL}/api/sos/${record.id}`, { credentials: 'include' });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.status && data.status !== record.status) {
+              await sosRepository.updateStatus(record.id, data.status);
+            }
+          }
+        } catch { /* skip */ }
+      }
+      await loadRecords();
+    } catch { /* non-fatal */ }
+  }, [loadRecords]);
+
   useEffect(() => {
     loadRecords();
-  }, [loadRecords]);
+    syncStaleRecords();
+  }, [loadRecords, syncStaleRecords]);
 
   // Re-load records when queueVersion changes (triggered by WebSocket state updates)
   useEffect(() => {
