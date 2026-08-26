@@ -77,7 +77,15 @@ export function configureWebPush(): void {
     return;
   }
 
-  webpush.setVapidDetails(`mailto:${email}`, publicKey, privateKey);
+  // Handle both "mailto:x@y.com" and "x@y.com" formats in VAPID_EMAIL
+  const subject = email.startsWith('mailto:') ? email : `mailto:${email}`;
+
+  try {
+    webpush.setVapidDetails(subject, publicKey, privateKey);
+  } catch (err) {
+    console.error('Failed to configure Web Push VAPID:', err);
+    // Non-fatal: push notifications won't work but the server stays up
+  }
 }
 
 /**
