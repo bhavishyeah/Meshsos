@@ -238,7 +238,7 @@ This plan builds the remaining frontend pages and backend endpoints to complete 
     - Non-blocking: errors don't fail the state transition
     - _Requirements: 10.3, 10.4, 10.5_
 
-- [ ] 12. Integration Testing & Build Verification
+- [x] 12. Integration Testing & Build Verification
   - [x] 12.1 Verify full build passes (shared + frontend + backend)
     - Run `npm run build` from root — all three workspaces must succeed
     - Verify no TypeScript errors from new files
@@ -249,7 +249,7 @@ This plan builds the remaining frontend pages and backend endpoints to complete 
     - New routes should not break existing functionality
     - _Requirements: all_
 
-  - [-] 12.3 Push to GitHub and verify deployments
+  - [x] 12.3 Push to GitHub and verify deployments
     - Commit all changes, push to main
     - Verify Railway backend deploys successfully
     - Verify Vercel frontend deploys successfully

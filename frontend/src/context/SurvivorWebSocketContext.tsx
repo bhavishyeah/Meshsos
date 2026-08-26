@@ -13,6 +13,7 @@ export interface ResponderInfo {
   sosId: string;
   responderName?: string;
   responderType?: string;
+  stationName?: string;
 }
 
 /**
@@ -120,10 +121,11 @@ export function SurvivorWebSocketProvider({ children }: { children: React.ReactN
       setQueueVersion((v) => v + 1);
 
       // Capture responder info when status becomes enRoute
-      if (change.newState === 'enRoute' && change.actorId) {
+      if (change.newState === 'enRoute') {
         setResponderInfo({
           sosId: change.sosId,
-          responderName: change.actorId, // actorId is the responderId
+          responderName: change.actorId ?? undefined,
+          stationName: change.metadata?.stationName,
         });
       }
     }

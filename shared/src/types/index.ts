@@ -33,6 +33,7 @@ export type {
   LocationUpdate,
   StatusChange,
   DispatchAssignment,
+  StationAlert,
   SystemHealth,
   LocationPayload,
   ServerToClientEvents,

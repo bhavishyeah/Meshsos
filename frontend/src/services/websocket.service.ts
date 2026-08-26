@@ -11,6 +11,7 @@ export interface WebSocketConfig {
     userId?: string;
     sessionId?: string;
     regionId?: string;
+    stationId?: string;
   };
 }
 

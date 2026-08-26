@@ -22,6 +22,7 @@ import type {
   LocationUpdate,
   StatusChange,
   DispatchAssignment,
+  StationAlert,
   SystemHealth,
   LocationPayload,
 } from '@meshsos/shared';
@@ -72,11 +73,12 @@ async function persistResponderLocation(responderId: string, location: LocationP
  * and register client→server event listeners.
  */
 function handleConnection(socket: TypedSocket): void {
-  const { role, userId, sessionId, regionId } = socket.handshake.auth as {
+  const { role, userId, sessionId, regionId, stationId } = socket.handshake.auth as {
     role?: string;
     userId?: string;
     sessionId?: string;
     regionId?: string;
+    stationId?: string;
   };
 
   // Join role-based rooms
@@ -90,6 +92,11 @@ function handleConnection(socket: TypedSocket): void {
 
   if (role === 'survivor' && sessionId) {
     socket.join(`survivor:${sessionId}`);
+  }
+
+  // Station operator joins their station's room
+  if (role === 'station' && stationId) {
+    socket.join(`station:${stationId}`);
   }
 
   // Join region room if provided
@@ -211,4 +218,14 @@ export function broadcastDispatchAssignment(responderId: string, data: DispatchA
 export function broadcastSystemHealth(data: SystemHealth): void {
   const server = getIO();
   server.emit('system:health', data);
+}
+
+/**
+ * Broadcast a station alert when an SOS is auto-dispatched to a station.
+ * Emits to the station's room and command-center.
+ */
+export function broadcastStationAlert(stationId: string, data: StationAlert): void {
+  const server = getIO();
+  server.to(`station:${stationId}`).emit('sos:stationAlert', data);
+  server.to('command-center').emit('sos:stationAlert', data);
 }

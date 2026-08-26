@@ -232,7 +232,11 @@ export function QueueListView({ onSelectRecord, onRefresh }: QueueListViewProps)
                           className="mt-1 text-xs text-purple-700 font-medium"
                           data-testid={`responder-info-${record.id}`}
                         >
-                          Responder on the way{responderInfo.responderName ? `: ${responderInfo.responderName}` : ''}
+                          {responderInfo.stationName
+                            ? `${responderInfo.stationName} is responding`
+                            : responderInfo.responderName
+                              ? `Responder on the way: ${responderInfo.responderName}`
+                              : 'Responder on the way'}
                         </div>
                       )}
                     </div>

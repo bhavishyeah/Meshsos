@@ -52,6 +52,7 @@ export interface SOSIncidentRow {
   status: SOSStatus;
   region_id: string | null;
   assigned_responder_id: string | null;
+  assigned_station_id: string | null;
   disaster_event_id: string | null;
   duplicate_flag: boolean;
   duplicate_of: string | null;

@@ -44,6 +44,11 @@ export interface StateChange {
   newState: SOSStatus;
   actorId: string | null;
   timestamp: Date;
+  /** Optional metadata (e.g., station name for auto-dispatch responses) */
+  metadata?: {
+    stationName?: string;
+    stationId?: string;
+  };
 }
 
 /**
@@ -84,6 +89,20 @@ export interface DispatchAssignment {
 }
 
 /**
+ * Payload for station alert when an SOS is auto-dispatched to a station.
+ */
+export interface StationAlert {
+  sosId: string;
+  emergencyType: EmergencyType;
+  latitude: number | null;
+  longitude: number | null;
+  distanceMeters: number | null;
+  priorityBand: PriorityBand;
+  createdAt: Date;
+  description: string | null;
+}
+
+/**
  * System health status broadcast.
  */
 export interface SystemHealth {
@@ -114,6 +133,7 @@ export interface ServerToClientEvents {
   'sos:created': (incident: SOSBroadcast) => void;
   'sos:updated': (update: SOSUpdate) => void;
   'sos:stateChange': (change: StateChange) => void;
+  'sos:stationAlert': (alert: StationAlert) => void;
   'responder:locationUpdate': (update: LocationUpdate) => void;
   'responder:statusChange': (change: StatusChange) => void;
   'dispatch:assigned': (assignment: DispatchAssignment) => void;

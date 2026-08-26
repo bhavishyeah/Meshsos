@@ -28,12 +28,14 @@ import {
 import { markEnRoute, markArrived, markResolved } from '../services/workflow.service.js';
 import { checkSuspiciousActivity, flagSuspiciousActivity } from '../services/suspicious-activity.service.js';
 import { checkDuplicate, flagDuplicate } from '../services/deduplication.service.js';
-import { broadcastDispatchAssignment, broadcastStateChange } from '../websocket/index.js';
+import { broadcastDispatchAssignment, broadcastStateChange, broadcastStationAlert } from '../websocket/index.js';
 import { startEscalation } from '../services/escalation.service.js';
 import { isValidTransition } from '@meshsos/shared';
+import type { SOSStatus } from '@meshsos/shared';
 import { query as dbQuery, getClient } from '../db/index.js';
 import { getResponderPool, rankResponders, detectRegion } from '../services/geo-dispatch.service.js';
 import { notifySOSStateChange } from '../services/push.service.js';
+import { findNearestStation, type StationMatch } from '../services/auto-dispatch.service.js';
 
 const router = Router();
 
@@ -134,6 +136,40 @@ router.post('/', optionalAuthenticate, async (req: Request, res: Response) => {
       console.error('Post-creation check error (non-blocking):', postCreationErr);
     }
 
+    // Auto-dispatch: find nearest matching station and assign (non-blocking)
+    try {
+      if (data.latitude != null && data.longitude != null) {
+        const stationMatch = await findNearestStation(
+          data.emergencyType,
+          data.latitude,
+          data.longitude
+        );
+
+        if (stationMatch) {
+          // Update the SOS record with the assigned station
+          await dbQuery(
+            `UPDATE sos_incidents SET assigned_station_id = $1 WHERE id = $2`,
+            [stationMatch.id, incident.id]
+          );
+
+          // Broadcast station alert via WebSocket
+          broadcastStationAlert(stationMatch.id, {
+            sosId: incident.id,
+            emergencyType: data.emergencyType,
+            latitude: data.latitude,
+            longitude: data.longitude,
+            distanceMeters: stationMatch.distanceMeters,
+            priorityBand: (incident.priority_band as 'critical' | 'high' | 'medium' | 'low') ?? 'low',
+            createdAt: new Date(data.timestamp),
+            description: data.description ?? null,
+          });
+        }
+      }
+    } catch (autoDispatchErr) {
+      // Log but do not fail the response — SOS was already created successfully
+      console.error('Auto-dispatch error (non-blocking):', autoDispatchErr);
+    }
+
     res.status(201).json(incident);
   } catch (err) {
     // Handle duplicate key (UUID already exists)
@@ -198,6 +234,76 @@ router.get('/history', authenticate, async (req: Request, res: Response) => {
     res.status(200).json({ incidents });
   } catch (err) {
     console.error('Get SOS history error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+/**
+ * GET /api/sos/station
+ * Get SOS incidents assigned to the authenticated user's station.
+ * The station is determined by matching the user's ID to stations.operator_user_id
+ * or via the stationId query parameter (for dispatchers/admins).
+ *
+ * Query params:
+ *   - stationId: (optional) explicit station ID to filter by
+ *   - status: (optional) comma-separated status filter
+ */
+router.get('/station', authenticate, async (req: Request, res: Response) => {
+  try {
+    const userId = req.user!.id;
+    const explicitStationId = req.query.stationId as string | undefined;
+    const statusFilter = req.query.status as string | undefined;
+
+    let stationId: string | null = explicitStationId ?? null;
+
+    // If no explicit stationId, look up by operator_user_id
+    if (!stationId) {
+      const stationResult = await dbQuery<{ id: string }>(
+        `SELECT id FROM stations WHERE operator_user_id = $1 AND status = 'active' LIMIT 1`,
+        [userId]
+      );
+      if (stationResult.rows.length > 0) {
+        stationId = stationResult.rows[0].id;
+      }
+    }
+
+    if (!stationId) {
+      res.status(200).json({ incidents: [], stationId: null });
+      return;
+    }
+
+    let sql = `
+      SELECT
+        si.id, si.user_session_id, si.user_id, si.emergency_type,
+        ST_Y(si.location::geometry) as latitude,
+        ST_X(si.location::geometry) as longitude,
+        si.accuracy, si.location_method, si.location_timestamp,
+        si.people_count, si.situation_type, si.description,
+        si.priority_score, si.priority_band, si.status,
+        si.region_id, si.assigned_responder_id, si.assigned_station_id,
+        si.disaster_event_id, si.duplicate_flag, si.duplicate_of,
+        si.created_at, si.updated_at,
+        s.name as station_name
+      FROM sos_incidents si
+      LEFT JOIN stations s ON s.id = si.assigned_station_id
+      WHERE si.assigned_station_id = $1
+    `;
+
+    const params: (string | number)[] = [stationId];
+
+    if (statusFilter) {
+      const statuses = statusFilter.split(',').map(s => s.trim());
+      const placeholders = statuses.map((_, i) => `$${i + 2}`).join(',');
+      sql += ` AND si.status IN (${placeholders})`;
+      params.push(...statuses);
+    }
+
+    sql += ` ORDER BY si.created_at DESC LIMIT 100`;
+
+    const result = await dbQuery(sql, params);
+    res.status(200).json({ incidents: result.rows, stationId });
+  } catch (err) {
+    console.error('Get station SOS error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -563,6 +669,133 @@ router.post(
       }
     } catch (err) {
       console.error('Dispatch SOS error:', err);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  }
+);
+
+// ─── Station Response Route ──────────────────────────────────────────────────
+
+const stationRespondSchema = z.object({
+  stationId: z.string().uuid(),
+  status: z.enum(['responding', 'arrived', 'resolved']),
+});
+
+/**
+ * POST /api/sos/:id/station-respond
+ * Station operator responds to an assigned SOS.
+ * Transitions: responding → enRoute, arrived → arrived, resolved → resolved.
+ * Broadcasts sos:stateChange to survivor and command center.
+ * Requires authentication (station operator logged in).
+ */
+router.post(
+  '/:id/station-respond',
+  authenticate,
+  async (req: Request, res: Response) => {
+    try {
+      const paramResult = uuidParamSchema.safeParse(req.params);
+      if (!paramResult.success) {
+        res.status(400).json({ error: 'Invalid SOS ID format' });
+        return;
+      }
+
+      const bodyResult = stationRespondSchema.safeParse(req.body);
+      if (!bodyResult.success) {
+        res.status(400).json({
+          error: 'Validation failed',
+          details: bodyResult.error.issues,
+        });
+        return;
+      }
+
+      const sosId = paramResult.data.id;
+      const { stationId, status: responseStatus } = bodyResult.data;
+
+      // Map station response status to SOS state
+      const stateMap: Record<string, SOSStatus> = {
+        responding: 'enRoute',
+        arrived: 'arrived',
+        resolved: 'resolved',
+      };
+      const newState = stateMap[responseStatus];
+
+      // Fetch the incident
+      const incident = await getSOSById(sosId);
+      if (!incident) {
+        res.status(404).json({ error: 'SOS incident not found' });
+        return;
+      }
+
+      // Verify this station is assigned to this SOS
+      if (incident.assigned_station_id !== stationId) {
+        res.status(403).json({ error: 'Station is not assigned to this SOS' });
+        return;
+      }
+
+      // Validate state transition
+      if (!isValidTransition(incident.status, newState)) {
+        res.status(409).json({
+          error: `Invalid state transition from '${incident.status}' to '${newState}'`,
+        });
+        return;
+      }
+
+      // Get station name for the broadcast
+      const stationResult = await dbQuery<{ name: string }>(
+        `SELECT name FROM stations WHERE id = $1`,
+        [stationId]
+      );
+      const stationName = stationResult.rows[0]?.name ?? 'Station';
+
+      // Update SOS status
+      const client = await getClient();
+      try {
+        await client.query('BEGIN');
+
+        await client.query(
+          `UPDATE sos_incidents SET status = $1, updated_at = NOW() WHERE id = $2`,
+          [newState, sosId]
+        );
+
+        // Record state transition event with station metadata
+        await client.query(
+          `INSERT INTO sos_events (sos_id, event_type, actor_id, previous_state, new_state, metadata, timestamp)
+           VALUES ($1, 'state_transition', $2, $3, $4, $5, NOW())`,
+          [
+            sosId,
+            req.user!.id,
+            incident.status,
+            newState,
+            JSON.stringify({ action: 'station_respond', stationId, stationName }),
+          ]
+        );
+
+        await client.query('COMMIT');
+      } catch (err) {
+        await client.query('ROLLBACK');
+        throw err;
+      } finally {
+        client.release();
+      }
+
+      // Broadcast state change to survivor and command center
+      broadcastStateChange(incident.user_session_id ?? sosId, {
+        sosId,
+        previousState: incident.status,
+        newState: newState,
+        actorId: req.user!.id,
+        timestamp: new Date(),
+        metadata: { stationName, stationId },
+      });
+
+      res.status(200).json({
+        success: true,
+        sosId,
+        newState,
+        stationName,
+      });
+    } catch (err) {
+      console.error('Station respond error:', err);
       res.status(500).json({ error: 'Internal server error' });
     }
   }

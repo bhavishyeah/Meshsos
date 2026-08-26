@@ -10,6 +10,7 @@ import { SignupPage } from './features/auth/SignupPage';
 import { AdminPanel } from './features/admin/AdminPanel';
 import { ResponderView } from './features/responder/ResponderView';
 import { ProfileScreen } from './features/profile/ProfileScreen';
+import { StationPanel } from './features/station/StationPanel';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { BottomNav } from './components/BottomNav';
 import { connectivityManager } from './bootstrap';
@@ -96,6 +97,15 @@ export function App() {
     return (
       <ProtectedRoute allowedRoles={['responder']}>
         <ResponderView />
+      </ProtectedRoute>
+    );
+  }
+
+  // --- Station Panel (requires dispatcher or administrator) ---
+  if (route === '/station') {
+    return (
+      <ProtectedRoute allowedRoles={['dispatcher', 'administrator']}>
+        <StationPanel />
       </ProtectedRoute>
     );
   }
