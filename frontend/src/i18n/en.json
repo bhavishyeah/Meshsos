@@ -1,0 +1,45 @@
+{
+  "emergency": {
+    "police": "Police/Rescue",
+    "medical": "Medical",
+    "foodWater": "Food/Water",
+    "childrenElderly": "Children/Elderly"
+  },
+  "status": {
+    "created": "Created",
+    "saved": "Saved",
+    "queued": "Queued",
+    "sending": "Sending",
+    "delivered": "Delivered",
+    "acknowledged": "Acknowledged",
+    "dispatched": "Dispatched",
+    "enRoute": "En Route",
+    "arrived": "Arrived",
+    "resolved": "Resolved",
+    "failed": "Failed",
+    "permanentlyFailed": "Permanently Failed"
+  },
+  "form": {
+    "name": "Name",
+    "language": "Language",
+    "emergencyContact": "Emergency Contact",
+    "householdSize": "Household Size",
+    "peopleCount": "People Count",
+    "situationType": "Situation Type",
+    "description": "Description"
+  },
+  "system": {
+    "offline": "You are offline",
+    "sosReceived": "SOS has been received",
+    "skip": "Skip",
+    "save": "Save"
+  },
+  "connectivity": {
+    "connected": "Connected",
+    "weakSignal": "Weak Signal",
+    "offline": "Offline"
+  },
+  "app": {
+    "title": "MeshSOS - Emergency Response Platform"
+  }
+}

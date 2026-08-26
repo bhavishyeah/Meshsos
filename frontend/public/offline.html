@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MeshSOS - Offline</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #1a1a2e;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 1rem;
+    }
+
+    .offline-container {
+      text-align: center;
+      max-width: 400px;
+    }
+
+    .offline-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 1.5rem;
+      border-radius: 50%;
+      background-color: #dc2626;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .offline-icon svg {
+      width: 40px;
+      height: 40px;
+      fill: #ffffff;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 0.75rem;
+      color: #ffffff;
+    }
+
+    p {
+      font-size: 1rem;
+      line-height: 1.5;
+      color: #a0aec0;
+      margin-bottom: 1rem;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      background-color: rgba(220, 38, 38, 0.2);
+      border: 1px solid #dc2626;
+      color: #fca5a5;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #dc2626;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .info-box {
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.75rem;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      text-align: left;
+    }
+
+    .info-box p {
+      color: #e2e8f0;
+      font-size: 0.875rem;
+      margin-bottom: 0;
+    }
+
+    .retry-btn {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      background-color: #dc2626;
+      color: #ffffff;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      min-width: 48px;
+      min-height: 48px;
+      text-decoration: none;
+    }
+
+    .retry-btn:hover {
+      background-color: #b91c1c;
+    }
+
+    .retry-btn:focus {
+      outline: 2px solid #fca5a5;
+      outline-offset: 2px;
+    }
+  </style>
+</head>
+<body>
+  <main class="offline-container" role="main" aria-label="Offline status">
+    <div class="offline-icon" aria-hidden="true">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M1 1l22 22M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.56 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <div class="status-badge" role="status" aria-live="polite">
+      <span class="status-dot" aria-hidden="true"></span>
+      <span>Offline</span>
+    </div>
+
+    <h1>You are currently offline</h1>
+
+    <p>MeshSOS cannot connect to the emergency network right now.</p>
+
+    <div class="info-box">
+      <p>Your saved SOS requests are safe and will be sent automatically when connectivity returns. No data has been lost.</p>
+    </div>
+
+    <button class="retry-btn" onclick="window.location.reload()" aria-label="Retry connecting to the network">
+      Retry Connection
+    </button>
+  </main>
+</body>
+</html>

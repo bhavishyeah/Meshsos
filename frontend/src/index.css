@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* System-level prefers-reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* App-level reduced motion (user preference in profile) */
+  .reduced-motion *,
+  .reduced-motion *::before,
+  .reduced-motion *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* High contrast mode - increased contrast for text and backgrounds */
+  .high-contrast {
+    --color-text: #000000;
+    --color-bg: #ffffff;
+    --color-border: #000000;
+    --color-focus: #0000ff;
+  }
+
+  .high-contrast body {
+    color: #000000;
+    background-color: #ffffff;
+  }
+
+  .high-contrast button,
+  .high-contrast a,
+  .high-contrast input,
+  .high-contrast select,
+  .high-contrast textarea {
+    border: 2px solid #000000;
+  }
+
+  .high-contrast button:focus,
+  .high-contrast a:focus,
+  .high-contrast input:focus,
+  .high-contrast select:focus,
+  .high-contrast textarea:focus {
+    outline: 3px solid #0000ff;
+    outline-offset: 2px;
+  }
+
+  /* Ensure minimum 48x48px touch targets for all interactive elements */
+  button,
+  a,
+  input,
+  select,
+  textarea,
+  [role="button"],
+  [tabindex] {
+    min-width: 48px;
+    min-height: 48px;
+  }
+
+  /* Screen reader optimized: add additional spacing and landmark hints */
+  .sr-optimized [aria-label]::before {
+    content: '';
+  }
+}

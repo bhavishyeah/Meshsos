@@ -1,0 +1,45 @@
+{
+  "emergency": {
+    "police": "पुलिस/बचाव",
+    "medical": "चिकित्सा",
+    "foodWater": "भोजन/पानी",
+    "childrenElderly": "बच्चे/बुज़ुर्ग"
+  },
+  "status": {
+    "created": "बनाया गया",
+    "saved": "सहेजा गया",
+    "queued": "कतार में",
+    "sending": "भेजा जा रहा है",
+    "delivered": "पहुँचाया गया",
+    "acknowledged": "स्वीकृत",
+    "dispatched": "भेजा गया",
+    "enRoute": "रास्ते में",
+    "arrived": "पहुँच गया",
+    "resolved": "हल किया गया",
+    "failed": "विफल",
+    "permanentlyFailed": "स्थायी रूप से विफल"
+  },
+  "form": {
+    "name": "नाम",
+    "language": "भाषा",
+    "emergencyContact": "आपातकालीन संपर्क",
+    "householdSize": "घर के सदस्य",
+    "peopleCount": "लोगों की संख्या",
+    "situationType": "स्थिति का प्रकार",
+    "description": "विवरण"
+  },
+  "system": {
+    "offline": "आप ऑफ़लाइन हैं",
+    "sosReceived": "SOS प्राप्त हुआ",
+    "skip": "छोड़ें",
+    "save": "सहेजें"
+  },
+  "connectivity": {
+    "connected": "जुड़ा हुआ",
+    "weakSignal": "कमज़ोर सिग्नल",
+    "offline": "ऑफ़लाइन"
+  },
+  "app": {
+    "title": "MeshSOS - आपातकालीन प्रतिक्रिया मंच"
+  }
+}
