@@ -8,6 +8,7 @@
  */
 
 import { Router, Request, Response } from 'express';
+import { authenticate } from '../middleware/auth.middleware.js';
 import { z } from 'zod';
 import {
   setupMFA,
@@ -30,7 +31,7 @@ export const mfaRouter = Router();
  * Request body: none (user identity from auth context)
  * Response: { secret, otpauthUri }
  */
-mfaRouter.post('/setup', async (req: Request, res: Response) => {
+mfaRouter.post('/setup', authenticate, async (req: Request, res: Response) => {
   try {
     // The authenticated user info should be attached by auth middleware
     const user = (req as AuthenticatedRequest).user;
@@ -108,7 +109,7 @@ mfaRouter.post('/verify', async (req: Request, res: Response) => {
     res.cookie('meshsos_refresh_token', result.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       path: '/api/auth',
     });
