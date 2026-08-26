@@ -520,6 +520,15 @@ export function LoginPage() {
             Back to home
           </a>
         </p>
+        <p className="mt-2 text-center text-sm text-gray-500">
+          Don't have an account?{' '}
+          <a
+            href="#/signup"
+            className="text-blue-600 hover:text-blue-700 font-medium"
+          >
+            Create one
+          </a>
+        </p>
       </div>
     </div>
   );

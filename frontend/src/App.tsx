@@ -6,6 +6,7 @@ import { HomeScreen } from './features/home';
 import { QueueListView } from './features/queue/QueueListView';
 import { SOSTimelineView } from './features/history/SOSTimelineView';
 import { LoginPage } from './features/auth/LoginPage';
+import { SignupPage } from './features/auth/SignupPage';
 import { AdminPanel } from './features/admin/AdminPanel';
 import { ResponderView } from './features/responder/ResponderView';
 import { ProfileScreen } from './features/profile/ProfileScreen';
@@ -65,6 +66,11 @@ export function App() {
   // --- Login (public) ---
   if (route === '/login') {
     return <LoginPage />;
+  }
+
+  // --- Signup (public) ---
+  if (route === '/signup') {
+    return <SignupPage />;
   }
 
   // --- Admin Panel (requires administrator) ---

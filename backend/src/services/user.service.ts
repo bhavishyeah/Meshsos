@@ -18,6 +18,10 @@ const VALID_ROLES = [
   'auditor',
 ] as const;
 
+export const SELF_REGISTER_ROLES = ['survivor'] as const;
+
+export type SelfRegisterRole = (typeof SELF_REGISTER_ROLES)[number];
+
 export type UserRole = (typeof VALID_ROLES)[number];
 
 export interface UserRow {
@@ -124,4 +128,52 @@ export async function listUsers(): Promise<UserRow[]> {
   );
 
   return result.rows;
+}
+
+/**
+ * Register a survivor via public self-registration.
+ *
+ * Validates name and email, hashes password with bcrypt (12 rounds),
+ * checks email uniqueness, and inserts the user with role 'survivor'.
+ * This bypasses the admin-only VALID_ROLES check since 'survivor' is
+ * only valid for self-registration, not admin-created accounts.
+ */
+export async function registerSurvivor(
+  name: string,
+  email: string,
+  password: string
+): Promise<UserRow> {
+  // Validate inputs
+  validatePassword(password);
+
+  if (!email || !email.includes('@')) {
+    throw new UserServiceError('A valid email address is required', 400);
+  }
+
+  if (!name || name.trim().length === 0) {
+    throw new UserServiceError('Name is required', 400);
+  }
+
+  // Check email uniqueness
+  const existing = await query<{ id: string }>(
+    'SELECT id FROM users WHERE email = $1',
+    [email.toLowerCase().trim()]
+  );
+
+  if (existing.rows.length > 0) {
+    throw new UserServiceError('A user with this email already exists', 409);
+  }
+
+  // Hash password
+  const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+
+  // Insert user with 'survivor' role
+  const result = await query<UserRow>(
+    `INSERT INTO users (name, email, password_hash, role)
+     VALUES ($1, $2, $3, $4)
+     RETURNING id, name, email, role, mfa_enabled, created_at`,
+    [name.trim(), email.toLowerCase().trim(), passwordHash, 'survivor']
+  );
+
+  return result.rows[0];
 }
